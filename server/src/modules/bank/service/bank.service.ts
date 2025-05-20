@@ -4,32 +4,38 @@ import { exceptions } from '../../../common/exceptions/exception.config';
 
 @Injectable()
 export class BankService {
-  constructor(private readonly ethersService: EthersService) {}
+  constructor(private readonly ethersService: EthersService) { }
 
   async getOwner() {
     try {
       // Todo: owner의 값을 리턴합니다.
+      return this.ethersService.owner();
       return;
     } catch (error) {
       //  Todo: 에러를 응답합니다.(exceptions.createBadRequestException(error.message))
+      throw exceptions.createBadRequestException(error.message);
     }
   }
 
   async getBalance() {
     try {
       // Todo: getContractBalance의값을 리턴합니다.
+      return this.ethersService.sentValue()
       return;
     } catch (error) {
       //  Todo: 에러를 응답합니다.(exceptions.createBadRequestException(error.message))
+      throw exceptions.createBadRequestException(error.message);
     }
   }
 
   async getTimestamp() {
     try {
       // Todo: getTimestamp의값을 리턴합니다.
+      return this.ethersService.timestamp();
       return;
     } catch (error) {
       //  Todo: 에러를 응답합니다.(exceptions.createBadRequestException(error.message))
+      throw exceptions.createBadRequestException(error.message);
     }
   }
 
@@ -37,7 +43,8 @@ export class BankService {
     try {
       // Todo: gasUsed의 값을 리턴합니다.
       // ⚠️ bigint 타입은 JSON으로 변환 시 string으로 변환 필요
-
+      const gasUsed = await this.ethersService.gasUsed();
+      return gasUsed.toString();
       return;
     } catch (error) {
       //  Todo: 에러를 응답합니다.(exceptions.createBadRequestException(error.message))
@@ -48,28 +55,33 @@ export class BankService {
   async deposit(value: number) {
     try {
       // Todo: deposit의 값을 리턴합니다.
-
+      return this.ethersService.deposit(value);
       return;
     } catch (error) {
       //  Todo: 에러를 응답합니다.(exceptions.createBadRequestException(error.message))
+      throw exceptions.createBadRequestException(error.message);
     }
   }
 
   async getCaller() {
     try {
       // Todo: getCaller의 값을 리턴합니다.
+      return this.ethersService.getCaller();
       return;
     } catch (error) {
       //  Todo: 에러를 응답합니다.(exceptions.createBadRequestException(error.message))
+      throw exceptions.createBadRequestException(error.message);
     }
   }
 
   async getOrigin() {
     try {
       // Todo: getOrigin의값을 리턴합니다.
+      return this.ethersService.getOrigin();
       return;
     } catch (error) {
       //  Todo: 에러를 응답합니다.(exceptions.createBadRequestException(error.message))
+      throw exceptions.createBadRequestException(error.message);
     }
   }
 
@@ -86,34 +98,48 @@ export class BankService {
         ⚠️ bigint 타입은 JSON으로 변환 시 string으로 변환 필요
       */
 
+      const [blockNumber, blockPrevrandao, blockGasLimit, blockCoinBase] =
+        await this.ethersService.getBlockDetails();
+
+      return {
+        blockNumber: blockNumber.toString(),
+        blockPrevrandao: blockPrevrandao.toString(),
+        blockGasLimit: blockGasLimit.toString(),
+        blockCoinBase: blockCoinBase.toString(),
+      };
       return;
     } catch (error) {
       //  Todo: 에러를 응답합니다.(exceptions.createBadRequestException(error.message))
+      throw exceptions.createBadRequestException(error.message);
     }
   }
 
   async getGasTrack() {
     try {
       // Todo: trackGasUsage의 값을 리턴합니다.
+      return this.ethersService.trackGasUsage();
       return;
     } catch (error) {
       //  Todo: 에러를 응답합니다.(exceptions.createBadRequestException(error.message))
+      throw exceptions.createBadRequestException(error.message);
     }
   }
 
   async getHash(message: string) {
     try {
       // Todo: generateHash의 값을 리턴합니다.
+      return this.ethersService.generateHash(message);
       return;
     } catch (error) {
       //  Todo: 에러를 응답합니다.(exceptions.createBadRequestException(error.message))
+      throw exceptions.createBadRequestException(error.message);
     }
   }
 
   async withdraw(value: number) {
     try {
       // Todo: withDraw의 값을 리턴합니다.
-
+      return await this.ethersService.withdraw(value);
       return;
     } catch (error) {
       /*
@@ -129,6 +155,12 @@ export class BankService {
         - 예외: 그 외 오류들
           → exceptions.createBadRequestException(error.message)
       */
+      if (error.reason === 'Only the owner can call withdraw.') {
+        throw exceptions.ONLY_OWNER;
+      } else {
+        throw exceptions.createBadRequestException(error.message);
+      }
     }
+
   }
 }
